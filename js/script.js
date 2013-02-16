@@ -56,8 +56,8 @@ var svg = d3.select("body").append("svg")
       .attr("class", "label_group")
       .attr("transform", "translate(" + (width/2+padding) + "," + (height/2+padding) + ")");
     
-      var count_group = svg.append("svg:g")
-      .attr('class', 'count_group')
+      var center_group = svg.append("svg:g")
+      .attr('class', 'center_group')
       .attr("transform", "translate(" + (width/2+padding) + "," + (height/2+padding) + ")");
 
 d3.csv("/eeg/branchen_distinct.csv", function(error, data) {
@@ -71,36 +71,34 @@ d3.csv("/eeg/branchen_distinct.csv", function(error, data) {
       .data(pie(data))
     .enter();
   var label = label_group.selectAll("path").data(pie(data)).enter();
-  var counts = count_group.selectAll("text").data(pie(data)).enter();  
+  var center = center_group.selectAll("text").data(pie(data)).enter();  
   
   g.append("path")
       .attr("d", arc)
       .style("fill", function(d) { return color((d.data.Count)) })
       .on('mouseover', function(d,i) { 
         d3.select($('.label_group text:eq('+i+')')[0]).style('opacity','1'); 
+        d3.select($('.center_group text:eq('+i+')')[0]).style('opacity','1'); 
         d3.select(this).select("path").transition().duration(750).attr("d", arcFinal3);
       })
       .on('mouseout', function(d,i){ 
         d3.select($('.label_group text:eq('+i+')')[0]).style('opacity','0'); 
+        d3.select($('.center_group text:eq('+i+')')[0]).style('opacity','0'); 
         d3.select(this).select("path").transition().duration(750).attr("d", arcFinal);
       });
   
-  counts.append("text")
-      .attr("transform",function(d) { return "translate("+arc.centroid(d)+")"})
+  center.append("text")
+      .attr("transform","translate(0,-30)")
       .style("opacity", "0")
+      .style("text-anchor", "middle")
+      .style("font-size", "40px")
       .text(function(d) {  return d.data.Count });
       
 
  label.append("text")
-      .attr("transform", function(d) { ; return "translate(" + Math.cos(((d.startAngle+d.endAngle - Math.PI)/2)) * (250) + "," + Math.sin((d.startAngle+d.endAngle - Math.PI)/2) * (250) + ")"; })
-      .attr("dy", "5")
-      .style("text-anchor", function(d){
-        if ((d.startAngle+d.endAngle)/2 < Math.PI ) {
-          return "beginning";
-        } else {
-          return "end";
-        }
-      })
+      .attr("transform","translate(0,0)")
+      .style("font-size", "12px")
+      .style("text-anchor", "middle")
       .style("opacity", "0")
       .text(function(d) { return d.data.Branche; });
 
