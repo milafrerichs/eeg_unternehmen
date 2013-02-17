@@ -1,106 +1,97 @@
-function textPosition(arcCenter) {
-  var arcCenterX = arcCenter[0];
-  var arcCenterY = arcCenter[1];
+(function() {
+  var branchen, per_bundesland;
 
-   var rotatedRadians = Math.atan2(-arcCenterX,-arcCenterY);
-   rotatedDegrees = rotatedRadians * (180 / Math.PI);
-   
-   var d3_svg_arcOffset = -Math.PI / 2;
-   var radians = rotatedDegrees * (Math.PI / 180);
-   
-   var points = [ Math.cos(radians) * 210, Math.sin(radians) * 210 ];
-   
-   
-   return points;
-}
-
-var w = 960;
-var h = 500;
-var r = Math.min(w, h) / 2;
-var ir = r-70;
-var textOffset = 14;
-var tweenDuration = 250;
-
-
-$(document).ready(function() { var width = 960,
-    height = 500,
-    radius = Math.min(width, height) / 2,
-    outerRadius = radius -10,
-    innerRadiusFinal = outerRadius * .5,
-    innerRadiusFinal3 = outerRadius* .45;
-    padding = 100;
-
-
-var arc = d3.svg.arc()
-    .outerRadius(radius - 10)
-    .innerRadius(radius - 70);
-    
-var arcFinal = d3.svg.arc().innerRadius(innerRadiusFinal).outerRadius(outerRadius);
-var arcFinal3 = d3.svg.arc().innerRadius(innerRadiusFinal3).outerRadius(outerRadius);
-
-var pie = d3.layout.pie()
-    .sort(null)
-    .value(function(d) { return d.Count; });
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width+padding*2)
-    .attr("height", height+padding*2)
-  
-   //GROUP FOR ARCS/PATHS
-    var arc_group = svg.append("svg:g")
-      .attr("class", "arc")
-      .attr("transform", "translate(" + (width/2+padding) + "," + (height/2+padding) + ")");
-
-    //GROUP FOR LABELS
-    var label_group = svg.append("svg:g")
-      .attr("class", "label_group")
-      .attr("transform", "translate(" + (width/2+padding) + "," + (height/2+padding) + ")");
-    
-      var center_group = svg.append("svg:g")
-      .attr('class', 'center_group')
-      .attr("transform", "translate(" + (width/2+padding) + "," + (height/2+padding) + ")");
-
-d3.csv("/eeg/branchen_distinct.csv", function(error, data) {
-
-  var scale = d3.scale.ordinal()
-                         .domain([1, d3.max(data, function(d) { return d.Count; })])
-.range([0, 20]);
-  var color = d3.scale.category20();
-  
-  var g = arc_group.selectAll("path")
-      .data(pie(data))
-    .enter();
-  var label = label_group.selectAll("path").data(pie(data)).enter();
-  var center = center_group.selectAll("text").data(pie(data)).enter();  
-  
-  g.append("path")
-      .attr("d", arc)
-      .style("fill", function(d) { return color((d.data.Count)) })
-      .on('mouseover', function(d,i) { 
-        d3.select($('.label_group text:eq('+i+')')[0]).style('opacity','1'); 
-        d3.select($('.center_group text:eq('+i+')')[0]).style('opacity','1'); 
-        d3.select(this).select("path").transition().duration(750).attr("d", arcFinal3);
-      })
-      .on('mouseout', function(d,i){ 
-        d3.select($('.label_group text:eq('+i+')')[0]).style('opacity','0'); 
-        d3.select($('.center_group text:eq('+i+')')[0]).style('opacity','0'); 
-        d3.select(this).select("path").transition().duration(750).attr("d", arcFinal);
+  branchen = function() {
+    var arc, arcFinal, arc_group, center_group, height, innerRadiusFinal, label_group, outerRadius, padding, pie, radius, svg, width;
+    width = 400;
+    height = 500;
+    radius = Math.min(width, height) / 2;
+    outerRadius = radius - 10;
+    innerRadiusFinal = outerRadius * .6;
+    padding = 10;
+    arc = d3.svg.arc().outerRadius(outerRadius).innerRadius(radius - 70);
+    arcFinal = d3.svg.arc().innerRadius(innerRadiusFinal).outerRadius(outerRadius);
+    pie = d3.layout.pie().sort(null).value(function(d) {
+      return d.Count;
+    });
+    svg = d3.select("body").append("svg").attr("id", "branchen").attr("width", width + padding * 2).attr("height", height + padding * 2);
+    arc_group = svg.append("svg:g").attr("class", "arc").attr("transform", "translate(" + (width / 2 + padding) + "," + (height / 2 + padding) + ")");
+    label_group = svg.append("svg:g").attr("class", "label_group").attr("transform", "translate(" + (width / 2 + padding) + "," + (height / 2 + padding) + ")");
+    center_group = svg.append("svg:g").attr('class', 'center_group').attr("transform", "translate(" + (width / 2 + padding) + "," + (height / 2 + padding) + ")");
+    return d3.csv("/eeg/branchen_distinct.csv", function(error, data) {
+      var center, color, g, label, scale;
+      scale = d3.scale.ordinal().domain([
+        1, d3.max(data, function(d) {
+          return d.Count;
+        })
+      ]).range([0, 20]);
+      color = d3.scale.category20();
+      g = arc_group.selectAll("path").data(pie(data)).enter();
+      label = label_group.selectAll("path").data(pie(data)).enter();
+      center = center_group.selectAll("text").data(pie(data)).enter();
+      g.append("path").attr("d", arc).style("fill", function(d) {
+        return color(d.data.Count);
+      }).on('mouseover', function(d, i) {
+        d3.select($('.label_group text:eq(' + i + ')')[0]).style('opacity', '1');
+        d3.select($('.center_group text:eq(' + i + ')')[0]).style('opacity', '1');
+        return d3.select(this).transition().duration(750).attr("d", arcFinal);
+      }).on('mouseout', function(d, i) {
+        d3.select($('.label_group text:eq(' + i + ')')[0]).style('opacity', '0');
+        d3.select($('.center_group text:eq(' + i + ')')[0]).style('opacity', '0');
+        return d3.select(this).transition().duration(750).attr("d", arc);
       });
-  
-  center.append("text")
-      .attr("transform","translate(0,-30)")
-      .style("opacity", "0")
-      .style("text-anchor", "middle")
-      .style("font-size", "40px")
-      .text(function(d) {  return d.data.Count });
-      
+      center.append("text").attr("transform", "translate(0,-30)").style("opacity", "0").style("text-anchor", "middle").style("font-size", "40px").text(function(d) {
+        return d.data.Count;
+      });
+      return label.append("text").attr("transform", "translate(0,0)").style("font-size", "12px").style("text-anchor", "middle").style("opacity", "0").text(function(d) {
+        return d.data.Branche;
+      });
+    });
+  };
 
- label.append("text")
-      .attr("transform","translate(0,0)")
-      .style("font-size", "12px")
-      .style("text-anchor", "middle")
-      .style("opacity", "0")
-      .text(function(d) { return d.data.Branche; });
+  per_bundesland = function() {
+    var balken, bar_padding, colors, labels, pb_height, pb_padding, pb_width, svg;
+    pb_width = 400;
+    pb_height = 200;
+    pb_padding = 20;
+    bar_padding = 5;
+    svg = d3.select("body").append("svg").attr("id", "per_bundesland").attr("width", pb_width + pb_padding * 2 + 50).attr("height", pb_height + pb_padding * 2);
+    balken = svg.append("svg:g").attr("class", "bundesland");
+    labels = svg.append("svg:g").attr("class", "labels");
+    colors = d3.scale.category20c();
+    return d3.csv("/eeg/per_bundesland.csv", function(error, data) {
+      var g, scale;
+      scale = d3.scale.linear().domain([
+        0, d3.max(data, function(d) {
+          return parseInt(d.Count);
+        })
+      ]).range([0, pb_height]);
+      g = balken.selectAll("path").data(data).enter().append("rect").attr("x", function(d, i) {
+        return i * (pb_width / data.length) + pb_padding;
+      }).attr("y", function(d) {
+        return pb_height - scale(d.Count);
+      }).attr("width", pb_width / data.length - bar_padding).attr("height", function(d) {
+        return scale(d.Count);
+      }).attr("fill", function(d, i) {
+        return "rgb(0, 100, " + (i * 20) + ")";
+      }).on("mouseover", function(d, i) {
+        return d3.select($('#per_bundesland .labels text:eq(' + i + ')')[0]).style('opacity', '1');
+      }).on("mouseout", function(d, i) {
+        return d3.select($('#per_bundesland .labels text:eq(' + i + ')')[0]).style('opacity', '0');
+      });
+      return labels.selectAll("text").data(data).enter().append("text").text(function(d) {
+        return d.Bundesland;
+      }).attr("x", function(d, i) {
+        return i * (pb_width / data.length) + pb_padding;
+      }).attr("y", pb_height + pb_padding).style("opacity", 0).style("text-anchor", "start");
+    });
+  };
 
-});
-});
+  $(function() {
+    branchen();
+    return per_bundesland();
+  });
+
+}).call(this);
+
+// Generated by CoffeeScript 1.5.0-pre
