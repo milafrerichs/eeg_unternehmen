@@ -1,3 +1,65 @@
+bundeslaender = []
+bundeslaender_abkuerzungen = (bundesland) ->
+  abkuerzung = switch bundesland
+    when "Baden-Württemberg" then "BW"
+    when "Bayern" then "BY"
+    when "Berlin" then "B"
+    when "Brandenburg" then "BB"
+    when "Bremen" then "HB"
+    when "Hamburg" then "HH"
+    when "Hessen" then "H"
+    when "Mecklenburg-Vorpommern" then "MV"
+    when "Niedersachsen" then "N"
+    when "Nordrhein-Westfalen" then "NRW"
+    when "Rheinland-Pfalz" then "RP"
+    when "Saarland" then "SR"
+    when "Sachsen" then "S"
+    when "Sachsen-Anhalt" then "SA"
+    when "Schleswig-Holstein" then "SW"
+    when "Thüringen" then "T"
+  abkuerzung
+  
+
+bundesland_branchen = (branche) ->
+  svg = d3.select("svg#per_bundesland")
+  balken = svg.select('g.bundesland')
+  pb_height = 200
+  pb_padding = 50
+  d3.csv("/eeg/branche_bundesland.csv", (error, data) ->
+    
+    bundeslaender_branchen = d3.map(data)
+    branche_bundeslaender = []
+    bundeslaender_branchen.forEach((key, value) -> 
+      if(value.branche == branche)
+        branche_bundeslaender[value.bundesland] =  value.Count
+    )
+    for bundesland in bundeslaender
+       bundesland.count = if branche_bundeslaender[bundesland.bundesland] then branche_bundeslaender[bundesland.bundesland] else 0
+    
+    scale = d3.scale.linear()
+    .domain([0, d3.max(bundeslaender, (d) ->  parseInt(d.count))])
+    .range([0, pb_height - pb_padding ])
+    
+    y_scale = d3.scale.linear()
+    .domain([0,d3.max(bundeslaender, (d) ->  parseInt(d.count))])
+    .range([pb_height - pb_padding,0 ])
+    
+    y_axis = d3.svg.axis().scale(y_scale).orient("right").ticks(5)
+    
+    svg.select(".y.axis")
+            .transition()
+            .duration(1000)
+            .call(y_axis);
+    
+    balken.selectAll("rect")
+    .data(bundeslaender)
+    .transition()
+    .duration(750)
+    .attr("height", (d) -> scale(d.count) )
+    .attr("y", (d) -> pb_height  - scale(d.count) )
+  )
+  
+
 branchen = () ->
   width = 400
   height = 500
@@ -56,6 +118,9 @@ branchen = () ->
       .transition()
       .duration(750)
       .attr("d", arcFinal)
+      
+      bundesland_branchen(d.data.Branche)
+      
       )
       .on('mouseout', (d,i) ->
         d3.select($('.label_group text:eq('+i+')')[0]).style('opacity','0')
@@ -82,15 +147,15 @@ branchen = () ->
   )
 
 per_bundesland = () ->
-  pb_width = 400
+  pb_width = 600
   pb_height = 200
-  pb_padding = 20
-  bar_padding = 5
+  pb_padding = 50
+  bar_padding = 10
   svg = d3.select("body")
   .append("svg")
   .attr("id","per_bundesland")
   .attr("width", pb_width + pb_padding *2 + 50)
-  .attr("height", pb_height + pb_padding * 2)
+  .attr("height", pb_height + pb_padding * 2+ 90)
   
   balken = svg.append("svg:g")
   .attr("class", "bundesland")
@@ -104,9 +169,13 @@ per_bundesland = () ->
     
     scale = d3.scale.linear()
     .domain([0, d3.max(data, (d) ->  parseInt(d.Count))])
-    .range([0, pb_height ])
+    .range([0, pb_height- pb_padding ])
     
-    g = balken.selectAll("path")
+    y_scale = d3.scale.linear()
+    .domain([0,d3.max(data, (d) ->  parseInt(d.Count))])
+    .range([pb_height - pb_padding,0 ])
+    
+    g = balken.selectAll("rect")
     .data(data)
     .enter()
     .append("rect")
@@ -114,26 +183,42 @@ per_bundesland = () ->
     .attr("y", (d) -> pb_height  - scale(d.Count) )
     .attr("width", pb_width / data.length - bar_padding)
     .attr("height", (d) -> scale(d.Count) )
-    .attr("fill", (d,i) -> return "rgb(0, 100, " + (i * 20) + ")";)
+    .attr("fill", (d,i) -> "rgb(0, " + (155 - i*10) + ", " + (255 - i*10) + ")")
     .on("mouseover", (d,i) ->
-      d3.select($('#per_bundesland .labels text:eq('+i+')')[0]).style('opacity','1')
+      
     )
     .on("mouseout", (d,i) ->
-      d3.select($('#per_bundesland .labels text:eq('+i+')')[0]).style('opacity','0')
+      
     )
     
     labels.selectAll("text")
     .data(data)
     .enter()
     .append("text")
-    .text( (d) -> d.Bundesland )
-    .attr("x", (d,i) -> i*(pb_width /data.length) + pb_padding )
-    .attr("y", pb_height + pb_padding)
-    .style("opacity", 0)
-    .style("text-anchor", "start")
+    .text( (d) -> bundeslaender_abkuerzungen(d.Bundesland) )
+    .attr("x", (d,i) -> i*(pb_width /data.length) + pb_padding + bar_padding + 5 )
+    .attr("y", pb_height + 20)
+    .style("text-anchor", "middle")
     
+    yAxis = d3.svg.axis().scale(y_scale).orient("right").ticks(5)
+    xAxis = d3.svg.axis()
+            .scale(d3.scale.linear().domain([1,16]).range([1,pb_width+pb_padding]))
+                          .orient("bottom")
+                          .tickValues(["","","","","","","","","","","","","","","",""]);
+    svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + (pb_height  ) + ")")
+            .call(xAxis)
+    svg.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(" + (pb_width + pb_padding ) + "," + pb_padding + ")")
+            .call(yAxis)
   )  
 $ ->
+  d3.csv("/eeg/per_bundesland.csv", (error, data) ->
+    bundeslaender = ({bundesland: entry.Bundesland, count:0 } for entry in data)
+    
+  )
   branchen()
   per_bundesland()  
   
