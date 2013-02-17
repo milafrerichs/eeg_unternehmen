@@ -50,7 +50,7 @@
     balken = svg.select('g.bundesland');
     pb_height = 200;
     pb_padding = 50;
-    return d3.csv("/eeg/branche_bundesland.csv", function(error, data) {
+    return d3.csv("/eeg_unternehmen/branche_bundesland.csv", function(error, data) {
       var branche_bundeslaender, bundeslaender_branchen, bundesland, scale, y_axis, y_scale, _i, _len;
       bundeslaender_branchen = d3.map(data);
       branche_bundeslaender = [];
@@ -100,7 +100,7 @@
     arc_group = svg.append("svg:g").attr("class", "arc").attr("transform", "translate(" + (width / 2 + padding) + "," + (height / 2 + padding) + ")");
     label_group = svg.append("svg:g").attr("class", "label_group").attr("transform", "translate(" + (width / 2 + padding) + "," + (height / 2 + padding) + ")");
     center_group = svg.append("svg:g").attr('class', 'center_group').attr("transform", "translate(" + (width / 2 + padding) + "," + (height / 2 + padding) + ")");
-    return d3.csv("/eeg/branchen_distinct.csv", function(error, data) {
+    return d3.csv("/eeg_unternehmen/branchen_distinct.csv", function(error, data) {
       var center, color, g, label, scale;
       scale = d3.scale.ordinal().domain([
         1, d3.max(data, function(d) {
@@ -141,7 +141,7 @@
     balken = svg.append("svg:g").attr("class", "bundesland");
     labels = svg.append("svg:g").attr("class", "labels");
     colors = d3.scale.category20c();
-    return d3.csv("/eeg/per_bundesland.csv", function(error, data) {
+    return d3.csv("/eeg_unternehmen/per_bundesland.csv", function(error, data) {
       var g, scale, xAxis, yAxis, y_scale;
       scale = d3.scale.linear().domain([
         0, d3.max(data, function(d) {
@@ -175,7 +175,7 @@
   };
 
   $(function() {
-    d3.csv("/eeg/per_bundesland.csv", function(error, data) {
+    d3.csv("/eeg_unternehmen/per_bundesland.csv", function(error, data) {
       var entry;
       return bundeslaender = (function() {
         var _i, _len, _results;
