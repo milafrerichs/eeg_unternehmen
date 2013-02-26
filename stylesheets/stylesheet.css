@@ -8,3 +8,21 @@
         font-family: sans-serif;
         font-size: 11px;
 }
+
+.line {
+  fill:none;
+  stroke: black;
+  stroke-width:2px;
+}
+.anzahl .line{
+  stroke: #B9CDAB;
+}
+.verbrauch .line {
+  stroke: #9D8276;
+}
+text.anzahl{
+  fill: #B9CDAB;
+}
+text.verbrauch {
+  fill: #9D8276;
+}
